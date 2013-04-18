@@ -5,7 +5,7 @@ Plugin URI:
 Description: This plugin allows you to set passwords to expire every X amount of days and to expire all user passwords.
 Version: 1.0
 Author: Rob DiVincenzo <rob.divincenzo@gmail.com>
-Author URI: 
+Author URI: https://github.com/robdivincenzo/wp-expire-plugins
 */
 
 $days_until_expired = abs( (int) get_option('days_until_expired') );
