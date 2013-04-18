@@ -3,7 +3,7 @@ jQuery(document).ready(function($) {
 		data = {
 			action: 'ep_expire_users'
 		};
-		
+
 		$.post(ajaxurl, data, function(response){
 			$('#EP_response').html(response);
 		});

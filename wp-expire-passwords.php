@@ -8,6 +8,10 @@ Author: Rob DiVincenzo <rob.divincenzo@gmail.com>
 Author URI: https://github.com/robdivincenzo/wp-expire-plugins
 */
 
+if( get_option('days_until_expired') == '' ) {
+	update_option('days_until_expired', 90 );
+}
+
 $days_until_expired = abs( (int) get_option('days_until_expired') );
 
 // Register the EP settings
@@ -34,12 +38,13 @@ function EP_admin_menu(){
 		<form method="post" action="options.php">
 			<?php settings_fields('EP_group_settings');?>
 			<div>
-				Expire after <input name="days_until_expired" size="1" maxlength="4" value="<?php echo $days_until_expired; ?>"/> days
+				Automatically expire passwords after <input name="days_until_expired" size="1" maxlength="4" value="<?php echo $days_until_expired; ?>"/> days (default is 90 days)
 			</div>
 			<div>
 				<input type="submit" class="button-primary" value="Update Settings"/>
 			</div>
 		</form>
+		<br />
 		<form id="expire_passwords_form" method="post" action="">
 			<div>
 				<input type="submit" class="button-primary" value="Expire Non-Super Admin Passwords"/>
@@ -70,7 +75,7 @@ add_action( 'password_reset', 'EP_set_password_expire' );
 // Check the password expire
 function EP_check_password_expire( $user, $username, $password ) {
 	global $days_until_expired;
-	
+
 	$password_expires = get_user_meta( $user->ID, 'EP_password_expires', true );
 	// If the expires field is not set, set it.
 	if ( empty( $password_expires ) ) {
@@ -88,10 +93,10 @@ add_filter( 'authenticate', 'EP_check_password_expire', 30, 3 );
 // Load scripts
 function EP_load_scripts( $hook ){
 	global $EP_options_page;
-	
+
 	if( $hook != $EP_options_page )
 		return;
-	
+
 	wp_enqueue_script('ep-ajax', plugin_dir_url(__FILE__) . 'js/ep-ajax.js', array('jquery'));
 }
 // Call to load scripts
