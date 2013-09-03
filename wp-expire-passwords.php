@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WP Expire Passwords
-Plugin URI: 
+Plugin URI: http://wordpress.org/plugins/wp-expire-passwords/
 Description: This plugin allows you to set passwords to expire every X amount of days and to expire all user passwords.
-Version: 1.0
+Version: 1.1.0
 Author: Rob DiVincenzo <rob.divincenzo@gmail.com>
-Author URI: https://github.com/robdivincenzo/wp-expire-plugins
+Author URI: divi-designs.com
 */
 
 if( get_option('days_until_expired') == '' ) {
@@ -55,22 +55,29 @@ function EP_admin_menu(){
 <?php 
 }
 
-// Reset password expire if there are no errors
-function EP_reset_password_expire( $errors, $update, $user ) {
-	if ( $errors->get_error_data( 'pass' ) || empty( $_POST['pass1'] ) || empty( $_POST['pass2'] ) )
+// Reset password expiration lock
+function EP_reset_password_expire( $user_id ) {
+	// Get the user
+	$user = get_user_by( 'id', $user_id );
+	// If the new password is the same as the old, do not reset password expiration
+	if( $user && wp_check_password( $_POST['pass1'], $user->data->user_pass, $user_id ) ) {
 		return;
-
-	EP_set_password_expire( $user );
+	} else {
+		// Reset the password expiration
+		EP_set_password_expire( $user );
+	}
 }
-// Call to reset password expire on profile update
-add_action( 'user_profile_update_errors', 'EP_reset_password_expire', 11, 3 );
+
+// Call to reset password expire when user edit's their own profile
+add_action( 'personal_options_update', 'EP_reset_password_expire');
+
+// Call to reset password expire when any other user edit's the profile password
+add_action( 'edit_user_profile_update', 'EP_reset_password_expire');
 
 // Set the password expire field
 function EP_set_password_expire( $user ) {
 	update_user_meta( $user->ID, 'EP_password_expires', time() );
 }
-// Call to set password expire on password reset
-add_action( 'password_reset', 'EP_set_password_expire' );
 
 // Check the password expire
 function EP_check_password_expire( $user, $username, $password ) {
@@ -82,7 +89,7 @@ function EP_check_password_expire( $user, $username, $password ) {
 		EP_set_password_expire( $user );
 	} else {
 		if ( ( ( ( time() - $password_expires )>= 60 * 60 * 24 * $days_until_expired  ) || ( $password_expires == 'manual_expire' ) ) && !is_super_admin( $user->ID ) ) {
-			$user = new WP_Error( 'authentication_failed', sprintf( __( '<strong>ERROR</strong>: Password expired. You must <a href="%s">reset your password</a>.', 'EP_password_expires' ), site_url( 'wp-login.php?action=lostpassword', 'login' ) ) );
+			$user = new WP_Error( 'authentication_failed', sprintf( __( '<strong>ERROR</strong>: Password expired. You must <a href="%s">reset your password</a> to a new unique password to lift this lock.', 'EP_password_expires' ), site_url( 'wp-login.php?action=lostpassword', 'login' ) ) );
 		}
 	}
 	return $user;
