@@ -3,7 +3,7 @@
 Plugin Name: WP Expire Passwords
 Plugin URI: http://wordpress.org/plugins/wp-expire-passwords/
 Description: This plugin allows you to set passwords to expire every X amount of days and to expire all user passwords.
-Version: 1.1.0
+Version: 1.1.1
 Author: Rob DiVincenzo <rob.divincenzo@gmail.com>
 Author URI: divi-designs.com
 */
@@ -56,11 +56,20 @@ function EP_admin_menu(){
 }
 
 // Reset password expiration lock
-function EP_reset_password_expire( $user_id ) {
-	// Get the user
-	$user = get_user_by( 'id', $user_id );
+function EP_reset_password_expire( $user, $new_pass = false ) {
+	// If the user_id is passed, get the user object
+	if( is_numeric( $user ) ){
+		// Get the user
+		$user = get_userdata( $user );
+	}
+
+	// if new_pass is not passed, set the proper post since it is a password update and not password reset
+	if( $new_pass === false ) {
+		$new_pass = $_POST['pass1'];
+	}
+
 	// If the new password is the same as the old, do not reset password expiration
-	if( $user && wp_check_password( $_POST['pass1'], $user->data->user_pass, $user_id ) ) {
+	if( $user && wp_check_password( $new_pass, $user->user_pass, $user->ID ) ) {
 		return;
 	} else {
 		// Reset the password expiration
@@ -73,6 +82,9 @@ add_action( 'personal_options_update', 'EP_reset_password_expire');
 
 // Call to reset password expire when any other user edit's the profile password
 add_action( 'edit_user_profile_update', 'EP_reset_password_expire');
+
+// Call to reset password expire when any other user edit's the profile password
+add_action( 'password_reset', 'EP_reset_password_expire');
 
 // Set the password expire field
 function EP_set_password_expire( $user ) {

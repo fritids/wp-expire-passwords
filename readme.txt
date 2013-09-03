@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=RNNDZ
 Tags: password, expire, user, security, administration, automatic, expiration
 Requires at least: 3.3
 Tested up to: 3.6
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,3 +32,6 @@ Set a default of 90 days to expire
 
 = 1.1.0 =
 Lock will not lift unless a user enters a new password that is different than the old one
+
+= 1.1.1 =
+Added case to lift password expiration lock to include password resetting as well as updating user.
